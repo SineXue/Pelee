@@ -17,7 +17,7 @@ def Pelee(net, from_layer='data', use_batchnorm=False):
     add_extra_layers_pelee(net, use_batchnorm=use_batchnorm, prefix='ext1/fe')
 
     raw_source_layers = ['stage3_tb', 'stage4_tb','ext1/fe1_2', 'ext1/fe2_2','ext1/fe3_2']
-
+    fpn_raw_source_layers = ['stage2_tb', 'stage3_tb', 'stage4_tb','ext1/fe1_2', 'ext1/fe2_2','ext1/fe3_2']
     # add_res_prediction_layers
     last_base_layer = 'stage4_tb'
     for i, from_layer in enumerate(raw_source_layers):

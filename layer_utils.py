@@ -7,8 +7,15 @@ from caffe.proto import caffe_pb2
 from google.protobuf import text_format
 
 
-def fpn_block(net, kernel_size=4, stride=2, pad=1, group=128, num_output=128, bias_term=False, use_relu=False, use_bn=False):
-  
+def fpn_block(net):
+  kernel_size=4
+  stride=2
+  pad=1
+  group=128
+  num_output=128 
+  bias_term=False
+  use_relu=False
+  use_bn=False
   ConvBNLayer(net, 'stage2_tb', 'newC1', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'stage3_tb', 'newC2', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'stage4_tb', 'newC3', use_bn, use_relu, 128, 1, 0, 1)

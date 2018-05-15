@@ -15,7 +15,7 @@ from caffe.model_libs import VGGNetBody
 def Pelee(net, from_layer='data', use_batchnorm=False):
     PeleeNetBody(net, from_layer)
     add_extra_layers_pelee(net, use_batchnorm=use_batchnorm, prefix='ext1/fe')
-    fpn_block(net)
+    fpn_block(net, kernel_size, stride, pad, group, num_output, bias_term, use_relu, use_bn)
     raw_source_layers = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6']
     # add_res_prediction_layers
     last_base_layer = 'fpn_tb'

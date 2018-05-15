@@ -16,19 +16,18 @@ def Pelee(net, from_layer='data', use_batchnorm=False):
     PeleeNetBody(net, from_layer)
     add_extra_layers_pelee(net, use_batchnorm=use_batchnorm, prefix='ext1/fe')
     fpn_block(net)
-    raw_source_layers = ['stage3_tb', 'stage4_tb','ext1/fe1_2', 'ext1/fe2_2','ext1/fe3_2']
+    raw_source_layers = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6']
     # add_res_prediction_layers
-    last_base_layer = 'stage4_tb'
+    last_base_layer = 'fpn_tb'
     for i, from_layer in enumerate(raw_source_layers):
-        out_layer = '{}/ext/pm{}'.format(last_base_layer, i+2)
+        out_layer = '{}/ext/pm{}'.format(last_base_layer, i+1)
         res_block(net, from_layer, 256, out_layer, stride=1, use_bn=True)
 
 
     return net
 
-Pelee.mbox_source_layers = [['stage4_tb/ext/pm2/res/relu', 'p1'], ['stage4_tb/ext/pm2/res/relu', 'p2'], 
-                            ['stage4_tb/ext/pm3/res/relu', 'p3'], ['stage4_tb/ext/pm4/res/relu', 'p4'],
-                            ['stage4_tb/ext/pm5/res/relu', 'p5'], ['stage4_tb/ext/pm6/res/relu', 'p6']]
+Pelee.mbox_source_layers = ['fpn_tb/ext/pm1/res/relu', 'fpn_tb/ext/pm2/res/relu', 'fpn_tb/ext/pm3/res/relu', 
+                            'fpn_tb/ext/pm4/res/relu', 'fpn_tb/ext/pm5/res/relu', 'fpn_tb/ext/pm6/res/relu']
 
 
 def VGG_SSD(net, from_layer='data', use_batchnorm=False):

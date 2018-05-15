@@ -7,6 +7,42 @@ from caffe.proto import caffe_pb2
 from google.protobuf import text_format
 
 
+def fpn_block(net, kernel_size=4, stride=2, pad=1, group=128, num_output=128, bias_term=False, use_relu=False, use_bn=False):
+  
+  ConvBNLayer(net, 'stage2_tb', 'newC1', use_bn, use_relu, 128, 1, 0, 1)
+  ConvBNLayer(net, 'stage3_tb', 'newC2', use_bn, use_relu, 128, 1, 0, 1)
+  ConvBNLayer(net, 'stage4_tb', 'newC3', use_bn, use_relu, 128, 1, 0, 1)
+  ConvBNLayer(net, 'ext1/fe1_2', 'newC4', use_bn, use_relu, 128, 1, 0, 1)
+  ConvBNLayer(net, 'ext1/fe2_2', 'newC5', use_bn, use_relu, 128, 1, 0, 1)
+  ConvBNLayer(net, 'ext1/fe3_2', 'p6', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP6 = L.Deconvolution(net.p6, convolution_param=dict(kernel_size, stride, group,
+                        num_output, pad, bias_term, weight_filler=dict(type='bilinear')),
+                             param=[dict(lr_mult=1, decay_mult=1)])
+  net.p5 = L.Eltwise(net['newC5'], net.upP6)
+  ConvBNLayer(net, 'p5', 'p5_lateral', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP5 = L.Deconvolution(net.p5_lateral, convolution_param=dict(kernel_size, stride, group,
+                       num_output, pad, bias_term, weight_filler=dict(type='bilinear')),
+                             param=[dict(lr_mult=1, decay_mult=1)])
+  net.p4 = L.Eltwise(net['newC4'], net.upP5)
+  ConvBNLayer(net, 'p4', 'p4_lateral', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP4 = L.Deconvolution(net.p4_lateral, convolution_param=dict(kernel_size, stride, group,
+                       num_output, pad, bias_term, weight_filler=dict(type='bilinear')),
+                             param=[dict(lr_mult=1, decay_mult=1)])
+  net.p3 = L.Eltwise(net['newC3'], net.upP4)
+  ConvBNLayer(net, 'p3', 'p3_lateral', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP3 = L.Deconvolution(net.p3_lateral, convolution_param=dict(kernel_size, stride, group,
+                       num_output, pad, bias_term, weight_filler=dict(type='bilinear')),
+                             param=[dict(lr_mult=1, decay_mult=1)])
+  net.p2 = L.Eltwise(net['newC2'], net.upP3)
+  ConvBNLayer(net, 'p2', 'p2_lateral', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP2 = L.Deconvolution(net.p2_lateral, convolution_param=dict(kernel_size, stride, group,
+                       num_output, pad, bias_term, weight_filler=dict(type='bilinear')),
+                             param=[dict(lr_mult=1, decay_mult=1)])
+  net.p1 = L.Eltwise(net['newC1'], net.upP2)
+  
+  return net
+
+
 def res_block(net, from_layer, num_filter, block_id, bottleneck_fact=0.5, stride=2, pad=1, use_bn=True):
 
   branch1 = '{}'.format(block_id)
@@ -28,7 +64,6 @@ def res_block(net, from_layer, num_filter, block_id, bottleneck_fact=0.5, stride
   net[relu_name] = L.ReLU(net[res_name], in_place=True)
 
   return relu_name
-
 
 def ConvBNLayer(net, from_layer, out_layer, use_bn, use_relu, num_output,
     kernel_size, pad, stride, dilation=1, use_scale=True, lr_mult=1,

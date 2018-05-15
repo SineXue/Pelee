@@ -14,8 +14,6 @@ def fpn_block(net):
   ConvBNLayer(net, 'stage3_tb', 'newC2', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'stage4_tb', 'newC3', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'ext1/fe1_2', 'newC4', use_bn, use_relu, 128, 1, 0, 1)
-  ConvBNLayer(net, 'ext1/fe2_2', 'newC5', use_bn, use_relu, 128, 1, 0, 1)
-  ConvBNLayer(net, 'ext1/fe3_2', 'p6', use_bn, use_relu, 128, 1, 0, 1)
   net.upP6 = L.Deconvolution(net.p6, convolution_param=dict(kernel_size=4, stride=2, group=128,
                         num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
                              param=[dict(lr_mult=1, decay_mult=1)])
@@ -25,22 +23,6 @@ def fpn_block(net):
                        num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
                              param=[dict(lr_mult=1, decay_mult=1)])
   net.p4 = L.Eltwise(net['newC4'], net.upP5)
-  ConvBNLayer(net, 'p4', 'p4_lateral', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP4 = L.Deconvolution(net.p4_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128,
-                       num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
-                             param=[dict(lr_mult=1, decay_mult=1)])
-  net.p3 = L.Eltwise(net['newC3'], net.upP4)
-  ConvBNLayer(net, 'p3', 'p3_lateral', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP3 = L.Deconvolution(net.p3_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128,
-                       num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
-                             param=[dict(lr_mult=1, decay_mult=1)])
-  net.p2 = L.Eltwise(net['newC2'], net.upP3)
-  ConvBNLayer(net, 'p2', 'p2_lateral', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP2 = L.Deconvolution(net.p2_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128,
-                       num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
-                             param=[dict(lr_mult=1, decay_mult=1)])
-  net.p1 = L.Eltwise(net['newC1'], net.upP2)
-  
   return net
 
 

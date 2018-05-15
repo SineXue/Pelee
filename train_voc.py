@@ -43,7 +43,7 @@ parser.add_argument('-b', '--batch-size', default=32, type=int,
                     metavar='N', help='mini-batch size (default: 32)')
 parser.add_argument('-k', '--kernel-size', default=1, type=int,
                     metavar='K', help='kernel size for CreateMultiBoxHead (default: 1)')
-parser.add_argument('--image-size', default=304, type=int,
+parser.add_argument('--image-size', default=320, type=int,
                     metavar='IMAGE_SIZE', help='image size (default: 304)')
 parser.add_argument('--weights', default=Default_weights_file, type=str,
                     metavar='WEIGHTS', help='initial weights file (default: {})'.format(Default_weights_file))
@@ -236,7 +236,7 @@ job_file = "{}/{}.sh".format(job_dir, model_name)
 # Stores the test image names and sizes. Created by data/VOC0712/create_list.sh
 name_size_file = "data/VOC0712/test_name_size.txt"
 
-pretrain_model = "models/peleenetv2_inet_288_7243.caffemodel"
+pretrain_model = "models/peleenet_inet_acc7243.caffemodel"
 
 # Stores LabelMapItem.
 label_map_file = "data/VOC0712/labelmap_voc.prototxt"

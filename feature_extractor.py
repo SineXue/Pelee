@@ -5,7 +5,7 @@ from caffe import layers as L
 from caffe import params as P
 from caffe.proto import caffe_pb2
 from google.protobuf import text_format
-from layer_utils import ConvBNLayer, res_block
+from layer_utils import ConvBNLayer, res_block, fpn_block
 from peleenet import PeleeNetBody
 
 from caffe.model_libs import VGGNetBody
@@ -15,9 +15,8 @@ from caffe.model_libs import VGGNetBody
 def Pelee(net, from_layer='data', use_batchnorm=False):
     PeleeNetBody(net, from_layer)
     add_extra_layers_pelee(net, use_batchnorm=use_batchnorm, prefix='ext1/fe')
-
+    fpn_block(net)
     raw_source_layers = ['stage3_tb', 'stage4_tb','ext1/fe1_2', 'ext1/fe2_2','ext1/fe3_2']
-    fpn_raw_source_layers = ['stage2_tb', 'stage3_tb', 'stage4_tb','ext1/fe1_2', 'ext1/fe2_2','ext1/fe3_2']
     # add_res_prediction_layers
     last_base_layer = 'stage4_tb'
     for i, from_layer in enumerate(raw_source_layers):
@@ -27,7 +26,9 @@ def Pelee(net, from_layer='data', use_batchnorm=False):
 
     return net
 
-Pelee.mbox_source_layers = ['stage4_tb/ext/pm2/res/relu', 'stage4_tb/ext/pm2/res/relu', 'stage4_tb/ext/pm3/res/relu', 'stage4_tb/ext/pm4/res/relu', 'stage4_tb/ext/pm5/res/relu', 'stage4_tb/ext/pm6/res/relu']
+Pelee.mbox_source_layers = [['stage4_tb/ext/pm2/res/relu', 'p1'], ['stage4_tb/ext/pm2/res/relu', 'p2'], 
+                            ['stage4_tb/ext/pm3/res/relu', 'p3'], ['stage4_tb/ext/pm4/res/relu', 'p4'],
+                            ['stage4_tb/ext/pm5/res/relu', 'p5'], ['stage4_tb/ext/pm6/res/relu', 'p6']]
 
 
 def VGG_SSD(net, from_layer='data', use_batchnorm=False):

@@ -14,13 +14,13 @@ def fpn_block(net):
   ConvBNLayer(net, 'stage3_tb', 'newC2', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'stage4_tb', 'newC3', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'ext1/fe1_2', 'p4', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP4 = L.Deconvolution(net.p4, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=1, decay_mult=1)])
+  net.upP4 = L.Deconvolution(net.p4, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
   net.p3 = L.Eltwise(net['newC3'], net.upP4)
   ConvBNLayer(net, 'p3', 'p3_lateral', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP3 = L.Deconvolution(net.p3_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),param=[dict(lr_mult=1, decay_mult=1)])
+  net.upP3 = L.Deconvolution(net.p3_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),param=[dict(lr_mult=0, decay_mult=0)])
   net.p2 = L.Eltwise(net['newC2'], net.upP3)
   ConvBNLayer(net, 'p2', 'p2_lateral', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP2 = L.Deconvolution(net.p2_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),param=[dict(lr_mult=1, decay_mult=1)])
+  net.upP2 = L.Deconvolution(net.p2_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),param=[dict(lr_mult=0, decay_mult=0)])
   net.p1 = L.Eltwise(net['newC1'], net.upP2)
   return net
 

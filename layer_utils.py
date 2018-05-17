@@ -13,16 +13,15 @@ def fpn_block(net):
   ConvBNLayer(net, 'stage2_tb', 'newC1', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'stage3_tb', 'newC2', use_bn, use_relu, 128, 1, 0, 1)
   ConvBNLayer(net, 'stage4_tb', 'newC3', use_bn, use_relu, 128, 1, 0, 1)
-  ConvBNLayer(net, 'ext1/fe1_2', 'newC4', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP6 = L.Deconvolution(net.p6, convolution_param=dict(kernel_size=4, stride=2, group=128,
-                        num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
-                             param=[dict(lr_mult=1, decay_mult=1)])
-  net.p5 = L.Eltwise(net['newC5'], net.upP6)
-  ConvBNLayer(net, 'p5', 'p5_lateral', use_bn, use_relu, 128, 1, 0, 1)
-  net.upP5 = L.Deconvolution(net.p5_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128,
-                       num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),
-                             param=[dict(lr_mult=1, decay_mult=1)])
-  net.p4 = L.Eltwise(net['newC4'], net.upP5)
+  ConvBNLayer(net, 'ext1/fe1_2', 'p4', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP4 = L.Deconvolution(net.p4, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=1, decay_mult=1)])
+  net.p3 = L.Eltwise(net['newC3'], net.upP4)
+  ConvBNLayer(net, 'p3', 'p3_lateral', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP3 = L.Deconvolution(net.p3_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),param=[dict(lr_mult=1, decay_mult=1)])
+  net.p2 = L.Eltwise(net['newC2'], net.upP3)
+  ConvBNLayer(net, 'p2', 'p2_lateral', use_bn, use_relu, 128, 1, 0, 1)
+  net.upP2 = L.Deconvolution(net.p2_lateral, convolution_param=dict(kernel_size=4, stride=2, group=128, num_output=128, pad=1, bias_term=False, weight_filler=dict(type='bilinear')),param=[dict(lr_mult=1, decay_mult=1)])
+  net.p1 = L.Eltwise(net['newC1'], net.upP2)
   return net
 
 

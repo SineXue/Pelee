@@ -35,6 +35,10 @@ The table below shows the results on PASCAL VOC 2007 test.
 | Pelee | [70.9](https://drive.google.com/open?id=1KJHKYQ2nChZXlxroZRpg-tRsksTXUhe9) | [76.4](https://drive.google.com/open?id=1ZKAP9d7Hzxi9Jc09ApL2BH1SgXXZPJk4)|
 | Pelee+fpn | 72.7 | - |
 
+# framework
+Pelee+fpn framework
+![](pelee_fpn_framework.png)
+
 ## Results on COCO
 The table below shows the results on COCO test-dev2015.
 

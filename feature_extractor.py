@@ -264,7 +264,7 @@ def CreateMultiBoxHead(net, data_layer="data", num_classes=[], from_layers=[],
         # Create confidence prediction layer.
         name = "{}{}_mbox_conf{}".format(head_postfix, i+1, conf_postfix)
         if i==0:
-            num_conf_output = num_priors_per_location * num_classes
+            num_conf_output = 4
         else:
             num_conf_output = 2
         ConvBNLayer(net, from_layer, name, use_bn=use_batchnorm, use_relu=False, lr_mult=lr_mult,

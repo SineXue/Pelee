@@ -178,7 +178,7 @@ def set_weight_sharing(net, lr_mult=1, share_layers=[['ext/pm2_mbox_conf','ext/p
 
 def CreateMultiBoxHead(net, data_layer="data", num_classes=[], from_layers=[],
         use_objectness=False, normalizations=[], use_batchnorm=True, lr_mult=1,
-        use_scale=True, min_sizes=[], max_sizes=[], prior_variance = [0.1],
+        use_scale=True, min_sizes=[], max_sizes=[], prior_variance = [0.1], sfd_maxout=[],
         aspect_ratios=[], steps=[], img_height=0, img_width=0, share_location=True,
         flip=True, clip=True, offset=0.5, inter_layer_depth=[], kernel_size=1, pad=0,
         conf_postfix='', loc_postfix='', head_postfix='ext/pm', **bn_param):
@@ -254,7 +254,7 @@ def CreateMultiBoxHead(net, data_layer="data", num_classes=[], from_layers=[],
         if not share_location:
             num_loc_output *= num_classes
         ConvBNLayer(net, from_layer, name, use_bn=use_batchnorm, use_relu=False, lr_mult=lr_mult,
-            num_output=num_loc_output, kernel_size=kernel_size, pad=pad, stride=1, **bn_param)
+            num_output=4, kernel_size=kernel_size, pad=pad, stride=1, **bn_param)
         permute_name = "{}_perm".format(name)
         net[permute_name] = L.Permute(net[name], order=[0, 2, 3, 1])
         flatten_name = "{}_flat".format(name)
@@ -263,9 +263,28 @@ def CreateMultiBoxHead(net, data_layer="data", num_classes=[], from_layers=[],
 
         # Create confidence prediction layer.
         name = "{}{}_mbox_conf{}".format(head_postfix, i+1, conf_postfix)
-        num_conf_output = num_priors_per_location * num_classes;
+        if i==0:
+            num_conf_output = num_priors_per_location * num_classes
+        else:
+            num_conf_output = 2
         ConvBNLayer(net, from_layer, name, use_bn=use_batchnorm, use_relu=False, lr_mult=lr_mult,
             num_output=num_conf_output, kernel_size=kernel_size, pad=pad, stride=1, **bn_param)
+        if i==0:
+            slice_name = "{}_slice".format(name)
+            maxout_name = "{}_maxout".format(name)
+            concat_name = "{}_out".format(name)
+            name1 = "{}_conf1".format(name)
+            name2 = "{}_conf2".format(name)
+            name3 = "{}_conf3".format(name)
+            name4 = "{}_conf4".format(name)
+            # add slice
+            net.name1, net.name2, net.name3, net.name4 
+            = L.Slice(net.name, name=slice_name, ntop=4, slice_param=dict(axis=1,slice_point=[1,2,3]))
+            # add max
+            net.maxout_name = L.Eltwise(net.name1, net.name2, net.name3, eltwise_param=dict(operation=2))
+            # add concat
+            net.concat_name = L.Concat(net.maxout_name, net.name4, concat_param=dict(axis=1))
+            name = concat_name
         permute_name = "{}_perm".format(name)
         net[permute_name] = L.Permute(net[name], order=[0, 2, 3, 1])
         flatten_name = "{}_flat".format(name)

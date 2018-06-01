@@ -278,12 +278,12 @@ def CreateMultiBoxHead(net, data_layer="data", num_classes=[], from_layers=[],
             name3 = "{}_conf3".format(name)
             name4 = "{}_conf4".format(name)
             # add slice
-            net.name1, net.name2, net.name3, net.name4 
-            = L.Slice(net.name, name=slice_name, ntop=4, slice_param=dict(axis=1,slice_point=[1,2,3]))
+            net[name1], net[name2], net[name3], net[name4] 
+            = L.Slice(net[name], name=slice_name, ntop=4, slice_param=dict(axis=1,slice_point=[1,2,3]))
             # add max
-            net.maxout_name = L.Eltwise(net.name1, net.name2, net.name3, eltwise_param=dict(operation=2))
+            net[maxout_name] = L.Eltwise(net[name1], net[name2], net[name3], eltwise_param=dict(operation=2))
             # add concat
-            net.concat_name = L.Concat(net.maxout_name, net.name4, concat_param=dict(axis=1))
+            net[concat_name] = L.Concat(net[maxout_name], net[name4], concat_param=dict(axis=1))
             name = concat_name
         permute_name = "{}_perm".format(name)
         net[permute_name] = L.Permute(net[name], order=[0, 2, 3, 1])

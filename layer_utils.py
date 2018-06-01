@@ -14,8 +14,8 @@ def sfd_block(net):
               dict(lr_mult=1, decay_mult=1)],
 'convolution_param': dict(kernel_size=3,
                           stride=1,
-                          group=288,
-                          num_output=288,
+                          group=256,
+                          num_output=256,
                           pad=1,
                           bias_filler=dict(type='constant'),
                           weight_filler=dict(type='xavier'))
@@ -25,8 +25,8 @@ def sfd_block(net):
               dict(lr_mult=1, decay_mult=1)],
 'convolution_param': dict(kernel_size=3,
                           stride=1,
-                          group=192,
-                          num_output=192,
+                          group=512,
+                          num_output=512,
                           pad=1,
                           bias_filler=dict(type='constant'),
                           weight_filler=dict(type='xavier'))
@@ -43,26 +43,30 @@ def sfd_block(net):
           'bias_term': True,
           'filler': dict(value=1.0),
           'bias_filler': dict(value=0.0),
-          }
-  net.upP3 = L.Deconvolution(net['stage3_1/concat'], convolution_param=dict(kernel_size=4, stride=2, group=288, num_output=288, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
+          } 
+  use_relu=False
+  use_bn=False
+  ConvBNLayer(net, 'stage2_2/concat', 'newC2', use_bn, use_relu, 256, 1, 0, 1)
+  ConvBNLayer(net, 'stage3_1/concat', 'newC3', use_bn, use_relu, 512, 1, 0, 1)
+  net.upP3 = L.Deconvolution(net['newC3'], convolution_param=dict(kernel_size=4, stride=2, group=512, num_output=512, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
   # add dw
-  net.upP3_dw = L.Convolution(net.upP5, **kwargs_1)
+  net.upP3_dw = L.Convolution(net.upP3, **kwargs_2)
   net.unP3_dw_bn = L.BatchNorm(net.upP3_dw, in_place=True, **bn_kwargs)
   net.unP3_dw_scale = L.Scale(net.unP3_dw_bn, in_place=True, **sb_kwargs)
   net.upP3_dw_relu = L.ReLU(net.unP3_dw_scale, in_place=True)
   # add slice
-  net.upP3_left, net.upP3_right = L.Slice(net.upP3_dw, name='upP3_slice', ntop=2, slice_param=dict(axis=1, slice_point=144))
+  net.upP3_left, net.upP3_right = L.Slice(net.upP3_dw, name='upP3_slice', ntop=2, slice_param=dict(axis=1, slice_point=256))
   # add max
   net.upP3_maxout = L.Eltwise(net.upP3_left, net.upP3_right, eltwise_param=dict(operation=2))
-  net.p2 = L.Eltwise(net['stage2_2/concat'], net.upP3_maxout)
-  net.upP2 = L.Deconvolution(net.p2, convolution_param=dict(kernel_size=4, stride=2, group=192, num_output=192, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
+  net.p2 = L.Eltwise(net['newC2'], net.upP3_maxout)
+  net.upP2 = L.Deconvolution(net.p2, convolution_param=dict(kernel_size=4, stride=2, group=256, num_output=256, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
   # add dw
-  net.upP2_dw = L.Convolution(net.upP2, **kwargs_2)
+  net.upP2_dw = L.Convolution(net.upP2, **kwargs_1)
   net.unP2_dw_bn = L.BatchNorm(net.upP2_dw, in_place=True, **bn_kwargs)
   net.unP2_dw_scale = L.Scale(net.unP2_dw_bn, in_place=True, **sb_kwargs)
   net.upP2_dw_relu = L.ReLU(net.unP2_dw_scale, in_place=True)
   # add slice
-  net.upP2_left, net.upP2_right = L.Slice(net.upP2_dw, name='upP2_slice', ntop=2, slice_param=dict(axis=1, slice_point=96))
+  net.upP2_left, net.upP2_right = L.Slice(net.upP2_dw, name='upP2_slice', ntop=2, slice_param=dict(axis=1, slice_point=128))
   # add max
   net.upP2_maxout = L.Eltwise(net.upP2_left, net.upP2_right, eltwise_param=dict(operation=2))
   net.p1 = L.Eltwise(net['stage1_tb'], net.upP2_maxout)

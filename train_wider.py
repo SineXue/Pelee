@@ -9,7 +9,7 @@ from caffe.model_libs import CreateAnnotatedDataLayer, check_if_exist, make_if_n
 from feature_extractor import CreateMultiBoxHead
 from google.protobuf import text_format
 
-from feature_extractor import VGG_RUN, VGG_SSD, Pelee
+from feature_extractor import VGG_RUN, VGG_SSD, Pelee, Mobile
 
 import math
 import os
@@ -21,12 +21,13 @@ import sys
 
 
 model_meta = {
+    'mobile':Mobile,
     'pelee':Pelee, 
     'ssd':VGG_SSD,
     'run':VGG_RUN
 }
 
-Default_weights_file = "models/peleenet_inet_acc7243.caffemodel"
+Default_weights_file = "models/mobilenet.caffemodel"
 
 parser = argparse.ArgumentParser(description='Pelee Training')
 
@@ -44,7 +45,7 @@ parser.add_argument('-b', '--batch-size', default=32, type=int,
 parser.add_argument('-k', '--kernel-size', default=1, type=int,
                     metavar='K', help='kernel size for CreateMultiBoxHead (default: 1)')
 parser.add_argument('--image-size', default=320, type=int,
-                    metavar='IMAGE_SIZE', help='image size (default: 304)')
+                    metavar='IMAGE_SIZE', help='image size (default: 320)')
 parser.add_argument('--weights', default=Default_weights_file, type=str,
                     metavar='WEIGHTS', help='initial weights file (default: {})'.format(Default_weights_file))
 parser.add_argument('--run-later', dest='run_soon', action='store_false',
@@ -80,7 +81,7 @@ remove_old_models = False
 pretrain_model = args.weights
 
 # The database file for training data. Created by data/VOC0712/create_data.sh
-train_data = "examples/widerface/widerface_trainval_lmdb"
+train_data = "examples/wider_transfer/widerface_trainval_lmdb"
 # The database file for testing data. Created by data/VOC0712/create_data.sh
 # test_data = "examples/VOC0712/VOC0712_test_lmdb"
 # Specify the batch sampler.
@@ -215,11 +216,11 @@ job_name = "SSD_{}".format(resize)
 model_name = "{}_{}".format(model_prefix, job_name)
 
 # Directory which stores the model .prototxt file.
-save_dir = "models/{}/widerface/{}".format(model_prefix, job_name)
+save_dir = "models/{}/wider_transfer/{}".format(model_prefix, job_name)
 # Directory which stores the snapshot of models.
-snapshot_dir = "models/{}/widerface/{}".format(model_prefix,job_name)
+snapshot_dir = "models/{}/wider_transfer/{}".format(model_prefix,job_name)
 # Directory which stores the job script and log file.
-job_dir = "jobs/{}/widerface/{}".format(model_prefix,job_name)
+job_dir = "jobs/{}/wider_transfer/{}".format(model_prefix,job_name)
 # Directory which stores the detection results.
 output_result_dir = "{}/data/VOCdevkit/results/VOC2007/{}/Main".format(os.environ['HOME'], job_name)
 
@@ -236,7 +237,7 @@ job_file = "{}/{}.sh".format(job_dir, model_name)
 # Stores the test image names and sizes. Created by data/VOC0712/create_list.sh
 # name_size_file = "data/VOC0712/test_name_size.txt"
 
-pretrain_model = "models/peleenet_inet_acc7243.caffemodel"
+pretrain_model = "models/mobilenet.caffemodel"
 
 # Stores LabelMapItem.
 label_map_file = "data/widerface/labelmap_voc.prototxt"

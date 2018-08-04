@@ -31,6 +31,18 @@ def sfd_block(net):
                           bias_filler=dict(type='constant'),
                           weight_filler=dict(type='xavier'))
           }
+  kwargs_3 = {
+          'param': [
+              dict(lr_mult=1, decay_mult=1)],
+'convolution_param': dict(kernel_size=3,
+                          stride=1,
+                          group=1024,
+                          num_output=1024,
+                          pad=1,
+                          bias_filler=dict(type='constant'),
+                          weight_filler=dict(type='xavier'))
+          }
+
   bn_kwargs = {
           'param': [
               dict(lr_mult=0, decay_mult=0),
@@ -46,30 +58,36 @@ def sfd_block(net):
           } 
   use_relu=False
   use_bn=False
-  ConvBNLayer(net, 'stage2_2/concat', 'newC2', use_bn, use_relu, 256, 1, 0, 1)
-  ConvBNLayer(net, 'stage3_1/concat', 'newC3', use_bn, use_relu, 512, 1, 0, 1)
-  net.upP3 = L.Deconvolution(net['newC3'], convolution_param=dict(kernel_size=4, stride=2, group=512, num_output=512, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
+  name = 'conv6/sep'
+  net.upP6 = L.Deconvolution(net[name], convolution_param=dict(kernel_size=4, stride=2, group=1024, num_output=1024, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
+  '''
   # add dw
-  net.upP3_dw = L.Convolution(net.upP3, **kwargs_2)
-  net.unP3_dw_bn = L.BatchNorm(net.upP3_dw, in_place=True, **bn_kwargs)
-  net.unP3_dw_scale = L.Scale(net.unP3_dw_bn, in_place=True, **sb_kwargs)
-  net.upP3_dw_relu = L.ReLU(net.unP3_dw_scale, in_place=True)
+  net.upP6_dw = L.Convolution(net.upP6, **kwargs_3)
+  net.unP6_dw_bn = L.BatchNorm(net.upP6_dw, in_place=True, **bn_kwargs)
+  net.unP6_dw_scale = L.Scale(net.unP6_dw_bn, in_place=True, **sb_kwargs)
+  net.upP6_dw_relu = L.ReLU(net.unP6_dw_scale, in_place=True)
+  '''
   # add slice
-  net.upP3_left, net.upP3_right = L.Slice(net.upP3_dw, name='upP3_slice', ntop=2, slice_param=dict(axis=1, slice_point=256))
+  net.upP6_left, net.upP6_right = L.Slice(net.upP6, name='upP6_slice', ntop=2, slice_param=dict(axis=1, slice_point=512))
   # add max
-  net.upP3_maxout = L.Eltwise(net.upP3_left, net.upP3_right, eltwise_param=dict(operation=2))
-  net.p2 = L.Eltwise(net['newC2'], net.upP3_maxout)
-  net.upP2 = L.Deconvolution(net.p2, convolution_param=dict(kernel_size=4, stride=2, group=256, num_output=256, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
+  net.upP6_maxout = L.Eltwise(net.upP6_left, net.upP6_right, eltwise_param=dict(operation=2))
+
+  net.p6 = L.Eltwise(net['conv5_5/sep'], net.upP6_maxout)
+  net.p5 = L.Eltwise(net['conv5_1/sep'], net.p6)
+  net.upP4 = L.Deconvolution(net.p5, convolution_param=dict(kernel_size=4, stride=2, group=512, num_output=512, pad=1, bias_term=False, weight_filler=dict(type='bilinear')), param=[dict(lr_mult=0, decay_mult=0)])
+  '''
   # add dw
-  net.upP2_dw = L.Convolution(net.upP2, **kwargs_1)
-  net.unP2_dw_bn = L.BatchNorm(net.upP2_dw, in_place=True, **bn_kwargs)
-  net.unP2_dw_scale = L.Scale(net.unP2_dw_bn, in_place=True, **sb_kwargs)
-  net.upP2_dw_relu = L.ReLU(net.unP2_dw_scale, in_place=True)
+  net.upP4_dw = L.Convolution(net.upP4, **kwargs_2)
+  net.unP4_dw_bn = L.BatchNorm(net.upP4_dw, in_place=True, **bn_kwargs)
+  net.unP4_dw_scale = L.Scale(net.unP4_dw_bn, in_place=True, **sb_kwargs)
+  net.upP4_dw_relu = L.ReLU(net.unP4_dw_scale, in_place=True)
+  '''
   # add slice
-  net.upP2_left, net.upP2_right = L.Slice(net.upP2_dw, name='upP2_slice', ntop=2, slice_param=dict(axis=1, slice_point=128))
+  net.upP4_left, net.upP4_right = L.Slice(net.upP4, name='upP4_slice', ntop=2, slice_param=dict(axis=1, slice_point=256))
   # add max
-  net.upP2_maxout = L.Eltwise(net.upP2_left, net.upP2_right, eltwise_param=dict(operation=2))
-  net.p1 = L.Eltwise(net['stage1_tb'], net.upP2_maxout)
+  net.upP4_maxout = L.Eltwise(net.upP4_left, net.upP4_right, eltwise_param=dict(operation=2))
+  net.p4 = L.Eltwise(net['conv4_1/sep'], net.upP4_maxout)
+
 
   return net
 

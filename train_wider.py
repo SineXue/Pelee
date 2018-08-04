@@ -31,7 +31,7 @@ Default_weights_file = "models/mobilenet.caffemodel"
 
 parser = argparse.ArgumentParser(description='Pelee Training')
 
-parser.add_argument('--arch', '-a', metavar='ARCH', default='pelee',
+parser.add_argument('--arch', '-a', metavar='ARCH', default='mobile',
                     choices=model_meta.keys(),
                     help='model architecture: ' +
                         ' | '.join(model_meta.keys()) +
@@ -216,11 +216,11 @@ job_name = "SSD_{}".format(resize)
 model_name = "{}_{}".format(model_prefix, job_name)
 
 # Directory which stores the model .prototxt file.
-save_dir = "models/{}/wider_transfer/{}".format(model_prefix, job_name)
+save_dir = "models/{}/wider_mobilenet/{}".format(model_prefix, job_name)
 # Directory which stores the snapshot of models.
-snapshot_dir = "models/{}/wider_transfer/{}".format(model_prefix,job_name)
+snapshot_dir = "models/{}/wider_mobilenet/{}".format(model_prefix,job_name)
 # Directory which stores the job script and log file.
-job_dir = "jobs/{}/wider_transfer/{}".format(model_prefix,job_name)
+job_dir = "jobs/{}/wider_mobilenet/{}".format(model_prefix,job_name)
 # Directory which stores the detection results.
 output_result_dir = "{}/data/VOCdevkit/results/VOC2007/{}/Main".format(os.environ['HOME'], job_name)
 
